@@ -58,13 +58,14 @@ table th {
       </thead>
       <tbody>
         {{$totalAchatProduits=0}}
+        {{$ChargeSupplementaire=0}}
         {{$ListProduit=$Fiche->ListProduit()->get()}}
         @foreach($ListProduit as $e)
         <tr>
           <td>{{$e->Designation}}</td>
           <td>{{$e->Qte}}</td>
           <td>{{$e->PrixUnit}}</td>
-          <td>{{$e->Total()}}</td>
+          <td>{{ number_format($e->Total(),2," .",",")}} DZ</td>
         </tr>
         {{$totalAchatProduits+=$e->Total()}}
         @endforeach
@@ -74,67 +75,157 @@ table th {
     <table >
       <thead>
         <tr >
-          <th colspan="4" style="text-align: center;">Les Charge Supplémentaire</th>
+          <th colspan="5" style="text-align: center;">Les Charge Supplémentaire</th>
         </tr>
       </thead>
       <tr>
-        <th>Solde payera</th>
-        <td colspan="3">{{number_format($Fiche->SoldePaysera,2," .",",")}}</td>
+        <th rowspan="{{$Fiche->soldePaysera()->get()->count()+1}}">Solde payera</th>
+        <td colspan="2">
+          Date
+        </td>
+        <td colspan="2">
+          Solde
+        </td>
       </tr>
-      <tr>
-        <th>Frais de transport</th>
-        <td colspan="3">{{number_format($Fiche->transport,2," .",",")}}</td>
+      @forelse ($Fiche->soldePaysera()->get() as $item)
+          <tr  >
+            <td  colspan="2">{{$item->created_at->format('d/m/Y H:i:s')}}</td>
+            <td  colspan="2">{{ number_format($item->Solde,2," .",",")}} DZ</td>
+          </tr>
+          {{$ChargeSupplementaire+=$item->Solde}}
+      @empty
+          <tr>
+            <td colspan="5" style="text-align:center"> Vide </td>
+          </tr>
+      @endforelse
+      <tr style="border-top-style: solid;">
+        <th rowspan="{{$Fiche->soldeTransport()->get()->count()+1}}">Frais de transport</th>
+        <td colspan="2">
+          Date
+        </td>
+        <td colspan="2">
+          Solde
+        </td>
       </tr>
-      <tr>
-        <th>Paiement des employés</th>
-        <td colspan="3">{{number_format($Fiche->employes,2," .",",")}}</td>
+      @forelse ($Fiche->soldeTransport()->get() as $item)
+          <tr  >
+            <td  colspan="2">{{$item->created_at->format('d/m/Y H:i:s')}}</td>
+            <td  colspan="2">{{ number_format($item->Solde,2," .",",")}} DZ</td>
+          </tr>
+          {{$ChargeSupplementaire+=$item->Solde}}
+      @empty
+          <tr>
+            <td colspan="5" style="text-align:center"> Vide </td>
+          </tr>
+      @endforelse
+      <tr style="border-top-style: solid;">
+        <th rowspan="{{$Fiche->soldeEmployes()->get()->count()+1}}">Paiement des employés</th>
+        <td colspan="2">
+          Date
+        </td>
+        <td colspan="2">
+          Solde
+        </td>
       </tr>
-      <tr >
-        <th rowspan="2">Frais centre d’appel </th>
+      @forelse ($Fiche->soldeEmployes()->get() as $item)
+          <tr  >
+            <td  colspan="2">{{$item->created_at->format('d/m/Y H:i:s')}}</td>
+            <td  colspan="2">{{ number_format($item->Solde,2," .",",")}} DZ</td>
+          </tr>
+          {{$ChargeSupplementaire+=$item->Solde}}
+      @empty
+          <tr>
+            <td colspan="5" style="text-align:center"> Vide </td>
+          </tr>
+      @endforelse
+      <tr style="border-top-style: solid;">
+        <th rowspan="{{$Fiche->SoldeAppel()->get()->count()+1}}">Frais centre d’appel </th>
+        <td>Date</td>
         <td>Quantité Expédier</td>
         <td> PU</td>
-        <td>TOTAL</td>
-
+        <td >TOTAL</td>
       </tr>
-      <tr>
-        <td>{{$Fiche->QteAppel}}</td>
-        <td> {{$Fiche->PrixAppel}}</td>
-        <td>{{number_format($Fiche->TotalAppel(),2," .",",")}}</td>
-      </tr>
+      {{$first =true}}
+      {{$totalappel= DB::table('appel_stockages') ->select(DB::raw('sum(qte*prix) as total'))->where([["fiche_comptable_id",'=',$Fiche->id],['type','=','1']])->groupBy('fiche_comptable_id')->get()}}
+      
+      @forelse ($Fiche->SoldeAppel()->get() as $item)
+          <tr  >
+            <td >{{$item->created_at->format('d/m/Y H:i:s')}}</td>
+            <td  >{{$item->qte}}</td>
+            <td  >{{$item->prix}}</td>
+            @if($first==true) {{$ChargeSupplementaire+=$totalappel[0]->total}}<td rowspan="{{$Fiche->SoldeAppel()->get()->count()}}">{{ number_format($totalappel[0]->total,2," .",",")}}DZ</td>{{$first=false}}@endif
+          </tr>
+      @empty
+          <tr>
+            <td colspan="5" style="text-align:center"> Vide </td>
+          </tr>
+      @endforelse
 
-      <tr >
-        <th rowspan="2">Frais stockage Emballages </th>
+      <tr style="border-top-style: solid;">
+        <th rowspan="{{$Fiche->SoldeAppel()->get()->count()+1}}">Frais stockage Emballages </th>
+        <td>Date</td>
         <td>Quantité Expédier</td>
         <td> PU</td>
-        <td>TOTAL</td>
+        <td >TOTAL</td>
 
       </tr>
-      <tr>
-        <td>{{$Fiche->QteStockage}}</td>
-        <td> {{$Fiche->PrixStockage}}</td>
-        <td>{{number_format($Fiche->TotalStockage(),2," .",",")}}</td>
-      </tr>
+      {{$first =true}}
+      {{$totalappel= DB::table('appel_stockages') ->select(DB::raw('sum(qte*prix) as total'))->where([["fiche_comptable_id",'=',$Fiche->id],['type','=','2']])->groupBy('fiche_comptable_id')->get()}}
+     
+      @forelse ($Fiche->SoldeStockage()->get() as $item)
+          <tr  >
+            <td >{{$item->created_at->format('d/m/Y H:i:s')}}</td>
+            <td  >{{$item->qte}}</td>
+            <td  >{{$item->prix}}</td>
+            @if($first==true)  {{$ChargeSupplementaire+=$totalappel[0]->total}}<td rowspan="{{$Fiche->SoldeStockage()->get()->count()}}">{{ number_format($totalappel[0]->total,2," .",",")}} DZ</td>{{$first=false}}@endif
+          </tr>
+      @empty
+          <tr>
+            <td colspan="5" style="text-align:center"> Vide </td>
+          </tr>
+      @endforelse
     </table>
     <!-- 3eme table-->
     <table>
       <tr>
-        <th colspan="2" style="text-align: center;">Calcule Bénéfice</td>
+        <th colspan="3" style="text-align: center;">Calcule Bénéfice</td>
       </tr>
       <tr>
-        <th width="250">Revenu</th>
-        <td >{{number_format($Fiche->Revenu,2," .",",")}}</td>
+        @php $Revenu=0; @endphp
+        <th width="250" rowspan="{{$Fiche->soldeRevenu()->get()->count()+1}}">Revenu</th>
+        <td colspan="1">
+          Date
+        </td>
+        <td colspan="1">
+          Solde
+        </td>
       </tr>
-      <tr>
+      @forelse ($Fiche->soldeRevenu()->get() as $item)
+          <tr  >
+            <td  colspan="1">{{$item->created_at->format('d/m/Y H:i:s')}}</td>
+            <td  colspan="1">{{ number_format($item->Solde,2," .",",")}} DZ</td>
+          </tr>
+          @php $Revenu+=$item->Solde @endphp
+      @empty
+          <tr>
+            <td colspan="3" style="text-align:center"> Vide </td>
+          </tr>
+      @endforelse
+      <tr style="border-top-style: solid;">
+        <th>Total Revenu</th>
+        <td colspan="2">{{number_format($Revenu,2," .",",")}} DZ</td>
+      </tr>
+      <tr style="border-top-style: solid;">
         <th>Total Achat des produits</th>
-        <td >{{number_format($totalAchatProduits,2," .",",")}}</td>
+        <td colspan="2">{{number_format($totalAchatProduits,2," .",",")}} DZ</td>
       </tr>
       <tr>
         <th>Total Les charge supplémentaire</th>
-        <td >{{number_format($Fiche->TotalChargeSupplementaire(),2," .",",")}}</td>
+        <td colspan="2">{{number_format($ChargeSupplementaire,2," .",",")}} DZ</td>
       </tr>
       <tr>
         <th>TOTAL</th>
-        <td>{{number_format($Fiche->Revenu-($totalAchatProduits+$Fiche->TotalChargeSupplementaire()),2," .",",")}}</td>
+        <td colspan="2">{{number_format($Revenu-$totalAchatProduits-$ChargeSupplementaire,2," .",",")}} DZ</td>
       </tr>
     </table>
   </body>

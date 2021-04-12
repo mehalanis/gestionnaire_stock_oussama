@@ -48,7 +48,8 @@ $i= (isset($_GET["DepensesPage"])) ? 1:((isset($_GET["RevenusPage"]))? 2:0);
               </div>
               <div class="form-group row mb-0">
                 <div class="col-md-8 offset-md-4">
-                  <a href="{{route('Finance.inedx')}}" class="btn btn-info">Retour</a>
+                  <a href="{{route('Budget.ADD')}}" style="margin:2px" class="btn btn-success">Ajouter</a>
+                  <a href="{{route('produitIndex')}}" class="btn btn-info">Retour</a>
                 </div>
               </div>
             </div>

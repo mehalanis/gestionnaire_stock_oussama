@@ -33,7 +33,7 @@
 <!-- Tolgo -->
 <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
-
+@livewireStyles
 </head>
 <body>
     <div id="app">
@@ -57,9 +57,20 @@
                       </li>
                       @endcan
                       @can('viewFinance',Auth::user())
-                      <li class="nav-item">
-                        <a class="nav-link" href="{{route('Finance.inedx')}}">Finance</a>
-                      </li>
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                Finance <span class="caret"></span>
+                            </a>
+
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{route('Budget.index')}}">
+                                    Budget
+                                </a>
+                                <a class="dropdown-item" href="{{route('FicheComptable.ViewAll')}}">
+                                    Fiche Comptable
+                                </a>
+                            </div>
+                        </li>
                       @endcan
                       @can('view',Auth::user())
                       <li class="nav-item">
@@ -115,5 +126,6 @@
             @yield('content')
         </main>
     </div>
+    @livewireScripts
 </body>
 </html>

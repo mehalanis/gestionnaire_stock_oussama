@@ -51,7 +51,7 @@ class BudgetController extends Controller
     }
     $entreprise->save();
 
-    return view("Finance/index");
+    return redirect("Budget");
   }
   public function ViewBudgetPDF($type)
   {
